@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+   <head>
+      <script src="/socket.io/socket.io.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
+      <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+      <script type = "text/javascript">
+
+        let socketio = io.connect();
+        socketio.on("message_to_client",function(data) {
+            console.log("socket.io called");
+            //Append an HR thematic break and the escaped HTML of the new message
+            document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname']));
+        });
+
+        function signOn(){
+            let nickname = document.getElementById("nickname").value;
+            //users.push(nickname);
+            socketio.emit("message_to_server", {nickname:nickname});
+            $("#userStuff").hide();
+            $("#chatRoomList").show();
+        }
+      </script>
+
+   </head>
+   <body>
+    <div class="container" id="userStuff">
+        <div class="row">
+            <div class="col-sm">
+                <input type="text" id="nickname" placeholder="Nickname">
+            </div>
+            <div class="col-sm">
+                <button onclick="signOn()" id="setNickname">Sign On</button>
+            </div>
+        </div>
+    </div>
+    <div class="container" id="chatRoomList">
+        <div class="row">
+            <div class="col-sm">
+                <button onclick="signOff()" id="signOff">Sign Off</button>
+            </div>
+        </div>
+        <div class="row">
+            
+            <!-- list of chatrooms grabbed from the dictionary -->
+        </div>
+    </div>
+
+    <div id="chatlog"></div>
+   </body>
+</html>
