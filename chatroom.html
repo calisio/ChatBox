@@ -15,20 +15,30 @@
 
         let socketio = io.connect();
         socketio.on("userSignedOn",function(data) {
+            // $("#userStuff").hide();
+            // $("#chatRoomListContainer").hide();
+            // $("#chatRoom").show();
             console.log("user signed on broadcast called");
-            //Append an HR thematic break and the escaped HTML of the new message
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed on."));
         });
 
         socketio.on("broadcastingUserSignOff",function(data) {
-            console.log("broadcasting signing off user");
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed off."));
         });
 
-        
-        let chatRoomsDisplayed = [];
+        socketio.on("rejoinHomeroom",function(data) {
+            console.log("rejoined homeroom");
+            //document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            //document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed on."));
+            $("#chatRoomListContainer").show();
+            $("#chatlog").html("");
+            $("#chatRoomName").html("");
+            $("#chatRoom").hide();
+        });
+ 
+        let chatRoomsDisplayed = ["homeroom"];
 
         socketio.on("sendingChatRoomList",function(data) {
             
@@ -55,16 +65,24 @@
             }
         });
 
+        socketio.on("chatRoomCreated",function(data) {
+            document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
+            document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed on."));
+        });
+
         function signOn(){
-            socketio.emit("userLoggedOn",{});
+            let nickname = document.getElementById("nickname").value;
+            socketio.emit("userLoggedOn",{nickname : nickname});
             $("#userStuff").hide();
             $("#chatRoomListContainer").show();
         }
         
         // will turn into join room function
-        function joinRoom(roomId){
-            let nickname = document.getElementById("nickname").value;
-            socketio.emit("joinRoom", {nickname:nickname, room: roomId});
+        function joinRoom(roomName){
+            console.log(roomName);
+            socketio.emit("joinRoom", {roomName: roomName});
+            //hide on response?
             $("#userStuff").hide();
             $("#chatRoomListContainer").hide();
             $("#chatRoom").show();
@@ -80,17 +98,19 @@
         }
 
         function leaveRoom(){
-            let nickname = document.getElementById("nickname").value;
-            socketio.emit("leaveRoom", {nickname:nickname});
-            $("#chatRoomListContainer").show();
-            $("#chatlog").html("");
-            $("#chatRoom").hide();
+            socketio.emit("leaveRoom", {});
+            //move to response
+            // $("#chatRoomListContainer").show();
+            // $("#chatlog").html("");
+            // $("#chatRoomName").html("");
+            // $("#chatRoom").hide();
         }
 
         function createChatRoom(){
             let chatRoomName = document.getElementById("chatRoomName").value;
-            let nickname = document.getElementById("nickname").value;
-            socketio.emit("createNewChatRoom", {chatRoomName: chatRoomName, nickname: nickname});
+            $("#chatRoomListContainer").hide();
+            $("#chatRoom").show();
+            socketio.emit("createNewChatRoom", {chatRoomName: chatRoomName});
         }
       </script>
 
@@ -130,9 +150,10 @@
                 <button onclick="leaveRoom()" id="leaveRoom">Leave Room</button>
             </div>
         </div>
+        <div class="row" id="chatRoomNameRow">
+        </div>
         <div class="row">
             <div id="chatlog"></div>
-            <!-- list of chatrooms grabbed from the dictionary -->
         </div>
     </div>
 

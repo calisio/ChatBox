@@ -1,5 +1,5 @@
 //create a dictionary of chatrooms, each containing an array of users in each chatroom
-chatRoomList = {};
+chatRoomList = {"homeroom": []};
 
 // Require the packages we will use:
 const http = require("http"),
@@ -29,49 +29,58 @@ const socketio = require("socket.io")(http, {
 // Attach our Socket.IO server to our HTTP server to listen
 const io = socketio.listen(server);
 io.sockets.on("connection", function (socket) {
+    const user = {
+        id: socket.id,
+        roomName: "homeroom"
+        // TO DO: Add 'banned from' room
+    }
+
+    console.log("socket id: " + socket.id);
     // This callback runs when a new Socket.IO connection is established.
 
-    socket.on('createNewChatRoom', function (data) {
-        chatRoomList[data["chatRoomName"]] = [data["nickname"]];
-        socket.join(data["chatRoomName"]);
-        io.sockets.emit("sendingChatRoomList", { chatRoomList: Object.keys(chatRoomList) }) // broadcast the message to other users
+    socket.on('userLoggedOn', function (data) {
+        user["nickname"] = data["nickname"];
+        chatRoomList["homeroom"].push[user.id];
+        socket.join("homeroom");
+        console.log("keys of chatRoomList: " + Object.keys(chatRoomList));
+        io.sockets.emit("sendingChatRoomList", { chatRoomList: Object.keys(chatRoomList) })
     });
 
-    socket.on('userLoggedOn', function (data) {
-        console.log("chatRoomList:" + chatRoomList["room1"]);
-        console.log("keys of chatRoomList: " + Object.keys(chatRoomList));
-        io.sockets.emit("sendingChatRoomList", { chatRoomList: Object.keys(chatRoomList) }) // broadcast the message to other users
+    socket.on('createNewChatRoom', function (data) {
+        chatRoomList[data["chatRoomName"]] = [user.id];
+        console.log("chatRoomList in createNewChatRoom: ")
+        console.log(chatRoomList);
+        socket.join(data["chatRoomName"]);
+        console.log(data["chatRoomName"]);
+        user.room = data["chatRoomName"];
+        io.sockets.in(user.room).emit("chatRoomCreated", { chatRoomName: user.room, nickname: user.nickname })
     });
 
     socket.on('joinRoom', function (data) {
-        // This callback runs when the server receives a new message from the client.
-        //chatRoomList[].push(data["nickname"]);
-        console.log("nickname: " + data["nickname"]); // log it to the Node.JS output
-        io.sockets.emit("userSignedOn", { nickname: data["nickname"] }) // broadcast the message to other users
+        console.log("room name in join room" + data['roomName']);
+        console.log(chatRoomList);
+        socket.leave("homeroom");
+        chatRoomList[data["roomName"]].push(user.id);
+        socket.join(data["roomName"]);
+        user.room = data["roomName"];
+        io.sockets.in(user.room).emit("userSignedOn", { nickname: user.nickname }) // broadcast the message to other users in that room
     });
 
     socket.on('signingOff', function (data) {
-        // let index = users.indexOf(data['nickname']);
-        // users.splice(index, 1);
-        // console.log(index);
-        // console.log("users array after signOff:" + users);
-        // socket.broadcast.emit("broadcastingUserSignOff", { nickname: data["nickname"] }) // broadcast the message to other users
+        socket.leave("homeroom");
     });
 
     socket.on('leaveRoom', function (data) {
-        
-        let index = users.indexOf(data['nickname']);
-        users.splice(index, 1);
-        console.log(index);
-        console.log("users array after signOff:" + users);
-        socket.broadcast.emit("broadcastingUserSignOff", { nickname: data["nickname"] }) // broadcast the message to other users
+        let index = chatRoomList[user.room].indexOf[user.id];
+        chatRoomList[user.room].splice(index, 1);
+        socket.leave(user.room);
+        io.sockets.in(user.room).emit("broadcastingUserSignOff", { nickname: user.nickname });
+        socket.join("homeroom");
+        socket.emit("rejoinHomeroom", {nickname : user.nickname});
     });
 
-    io.sockets.on('disconnect', function(){
-        //remove the user from users array
-        let index = users.indexOf(socket);
-        users.splice(index, 1);
-        console.log(index);
-        console.log(users);
+    socket.on('disconnect', function(){
+        console.log("disconnect: " + socket.id);
     });
+
 });
