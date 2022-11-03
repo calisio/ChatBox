@@ -31,7 +31,7 @@ const io = socketio.listen(server);
 io.sockets.on("connection", function (socket) {
     const user = {
         id: socket.id,
-        roomName: "homeroom"
+        room: "homeroom"
         // TO DO: Add 'banned from' room
     }
 
@@ -43,7 +43,7 @@ io.sockets.on("connection", function (socket) {
         chatRoomList["homeroom"].push[user.id];
         socket.join("homeroom");
         console.log("keys of chatRoomList: " + Object.keys(chatRoomList));
-        io.sockets.emit("sendingChatRoomList", { chatRoomList: Object.keys(chatRoomList) })
+        io.sockets.in("homeroom").emit("sendingChatRoomList", { chatRoomList: Object.keys(chatRoomList) })
     });
 
     socket.on('createNewChatRoom', function (data) {
@@ -63,7 +63,8 @@ io.sockets.on("connection", function (socket) {
         chatRoomList[data["roomName"]].push(user.id);
         socket.join(data["roomName"]);
         user.room = data["roomName"];
-        io.sockets.in(user.room).emit("userSignedOn", { nickname: user.nickname }) // broadcast the message to other users in that room
+        console.log(user.room);
+        io.sockets.in(user.room).emit("userSignedOn", { nickname: user.nickname, chatRoomName: user.room }) 
     });
 
     socket.on('signingOff', function (data) {

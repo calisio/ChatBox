@@ -1,0 +1,44 @@
+Module 3 regrade - partial credit for editing stories but not titles?
+Module 4 regrade - "hello world" regex
+
+how to remove from usersArray on closing the window?
+	disconnect
+	
+
+
+display rooms for other users immediately after creation
+
+room name not displaying for second user
+
+1 user not getting pushed into array for each room
+
+
+
+create object for user
+	socket id
+	username
+	banned rooms
+	etc.
+
+
+
+
+
+
+//creative portion
+delete chat room
+notify others that person left
+
+
+
+
+probably need to clear chatRoomsDisplayed when going back to chatroomlist page
+
+
+
+
+BREAKTHROUGH:
+send events back to cleint from server using room.in(room) (something like that)
+define functions in chatroom.html js using socketio.on("event")s instead of plain js functions
+	so that it only updates DOM elements in that specific room
+

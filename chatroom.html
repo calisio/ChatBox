@@ -19,6 +19,7 @@
             // $("#chatRoomListContainer").hide();
             // $("#chatRoom").show();
             console.log("user signed on broadcast called");
+            document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed on."));
         });
