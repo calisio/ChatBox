@@ -35,36 +35,28 @@ io.sockets.on("connection", function (socket) {
         // TO DO: Add 'banned from' room
     }
 
-    console.log("socket id: " + socket.id);
     // This callback runs when a new Socket.IO connection is established.
 
     socket.on('userLoggedOn', function (data) {
         user["nickname"] = data["nickname"];
         chatRoomList["homeroom"].push[user.id];
         socket.join("homeroom");
-        console.log("keys of chatRoomList: " + Object.keys(chatRoomList));
         io.sockets.in("homeroom").emit("sendingChatRoomList", { chatRoomList: Object.keys(chatRoomList) })
     });
 
     socket.on('createNewChatRoom', function (data) {
         chatRoomList[data["chatRoomName"]] = [user.id];
-        console.log("chatRoomList in createNewChatRoom: ")
-        console.log(chatRoomList);
         socket.join(data["chatRoomName"]);
-        console.log(data["chatRoomName"]);
         user.room = data["chatRoomName"];
         io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
         io.sockets.in(user.room).emit("chatRoomCreated", { chatRoomName: user.room, nickname: user.nickname })
     });
 
     socket.on('joinRoom', function (data) {
-        console.log("room name in join room" + data['roomName']);
-        console.log(chatRoomList);
         socket.leave("homeroom");
         chatRoomList[data["roomName"]].push(user.id);
         socket.join(data["roomName"]);
         user.room = data["roomName"];
-        console.log(user.room);
         io.sockets.in(user.room).emit("userSignedOn", { nickname: user.nickname, chatRoomName: user.room }) 
     });
 

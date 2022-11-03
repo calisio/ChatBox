@@ -19,10 +19,6 @@
 
 
         socketio.on("userSignedOn",function(data) {
-            // $("#userStuff").hide();
-            // $("#chatRoomListContainer").hide();
-            // $("#chatRoom").show();
-            console.log("user signed on broadcast called");
             document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed on."));
@@ -34,7 +30,6 @@
         });
 
         socketio.on("rejoinHomeroom",function(data) {
-            console.log("rejoined homeroom");
             //document.getElementById("chatlog").appendChild(document.createElement("hr"));
             //document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed on."));
             $("#chatRoomListContainer").show();
@@ -45,11 +40,9 @@
 
         function displayChatRooms(data){
             let chatRoomArray = data["chatRoomList"];
-
-            console.log(chatRoomArray);
             let chatRoomList =  document.getElementById("chatRoomList");
+
             for (let i=0; i < chatRoomArray.length; i++) {
-                console.log("aaaaa");
                 if(!chatRoomsDisplayed.includes(chatRoomArray[i])){
                     chatRoomsDisplayed.push(chatRoomArray[i]);
                     chatRoomList.appendChild(document.createTextNode(chatRoomArray[i]));
@@ -89,11 +82,8 @@
             $("#chatRoomListContainer").show();
         }
         
-        // will turn into join room function
         function joinRoom(roomName){
-            console.log(roomName);
             socketio.emit("joinRoom", {roomName: roomName});
-            //hide on response?
             $("#userStuff").hide();
             $("#chatRoomListContainer").hide();
             $("#chatRoom").show();
@@ -110,11 +100,6 @@
 
         function leaveRoom(){
             socketio.emit("leaveRoom", {});
-            //move to response
-            // $("#chatRoomListContainer").show();
-            // $("#chatlog").html("");
-            // $("#chatRoomName").html("");
-            // $("#chatRoom").hide();
         }
 
         function createChatRoom(){
