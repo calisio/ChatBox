@@ -4,9 +4,12 @@ how to remove from usersArray on closing the window?
 
 
 1 user not getting pushed into array for each room
+// maybe this is the reason that sign off is not working when one person signs off
 
-change "user has signed off" message to "user has left room"
-	unless they completely sign off ?
+
+*do functions on sign off
+
+
 
 add chat functions both in homeroom and private rooms
 

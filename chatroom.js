@@ -68,13 +68,19 @@ io.sockets.on("connection", function (socket) {
         let index = chatRoomList[user.room].indexOf[user.id];
         chatRoomList[user.room].splice(index, 1);
         socket.leave(user.room);
-        io.sockets.in(user.room).emit("broadcastingUserSignOff", { nickname: user.nickname });
+        io.sockets.in(user.room).emit("broadcastingUserLeftRoom", { nickname: user.nickname });
         socket.join("homeroom");
         io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
         socket.emit("rejoinHomeroom", {nickname : user.nickname});
     });
 
     socket.on('disconnect', function(){
+        let index = chatRoomList[user.room].indexOf(user.id);
+        chatRoomList[user.room].splice(index, 1);
+        socket.leave(user.room);
+        io.sockets.in(user.room).emit("broadcastingUserSignedOff", { nickname: user.nickname });
+        //make function for disconnecting
+        socket.emit("disconnecting", {});
         console.log("disconnect: " + socket.id);
     });
 
