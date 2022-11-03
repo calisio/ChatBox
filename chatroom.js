@@ -79,7 +79,7 @@ io.sockets.on("connection", function (socket) {
         chatRoomList[user.room].splice(index, 1);
         socket.leave(user.room);
         io.sockets.in(user.room).emit("broadcastingUserSignedOff", { nickname: user.nickname });
-        //make function for disconnecting
+        //maybe only emit to homeroom ??
         socket.emit("userDisconnecting", {});
         console.log("disconnect: " + socket.id);
     });
