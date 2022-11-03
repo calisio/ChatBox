@@ -57,7 +57,7 @@ io.sockets.on("connection", function (socket) {
         chatRoomList[data["roomName"]].push(user.id);
         socket.join(data["roomName"]);
         user.room = data["roomName"];
-        io.sockets.in(user.room).emit("userSignedOn", { nickname: user.nickname, chatRoomName: user.room }) 
+        io.sockets.in(user.room).emit("userJoinedRoom", { nickname: user.nickname, chatRoomName: user.room }) 
     });
 
     socket.on('signingOff', function (data) {
@@ -80,7 +80,7 @@ io.sockets.on("connection", function (socket) {
         socket.leave(user.room);
         io.sockets.in(user.room).emit("broadcastingUserSignedOff", { nickname: user.nickname });
         //make function for disconnecting
-        socket.emit("disconnecting", {});
+        socket.emit("userDisconnecting", {});
         console.log("disconnect: " + socket.id);
     });
 

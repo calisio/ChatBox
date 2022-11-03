@@ -17,11 +17,11 @@
         let chatRoomsDisplayed = ["homeroom"];
         let socketio = io.connect();
 
-        socketio.on("userSignedOn",function(data) {
+        socketio.on("userJoinedRoom",function(data) {
             document.getElementById("nickname").innerHTML = "";
             document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
-            document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed on."));
+            document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has joined the room."));
         });
 
         socketio.on("broadcastingUserLeftRoom",function(data) {
@@ -49,7 +49,7 @@
         socketio.on("chatRoomCreated",function(data) {
             document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
-            document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed on."));
+            document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has joined the room."));
         });
 
         socketio.on("broadcastingUserSignedOff",function(data) {
@@ -57,7 +57,7 @@
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed off."));
         });
 
-        socketio.on("disconnecting",function(data) {
+        socketio.on("userDisconnecting",function(data) {
             $("#chatRoomListContainer").hide();
             $("#chatlog").html("");
             $("#chatRoomName").html("");
