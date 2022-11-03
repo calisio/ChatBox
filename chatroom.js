@@ -53,6 +53,7 @@ io.sockets.on("connection", function (socket) {
         socket.join(data["chatRoomName"]);
         console.log(data["chatRoomName"]);
         user.room = data["chatRoomName"];
+        io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
         io.sockets.in(user.room).emit("chatRoomCreated", { chatRoomName: user.room, nickname: user.nickname })
     });
 
@@ -77,6 +78,7 @@ io.sockets.on("connection", function (socket) {
         socket.leave(user.room);
         io.sockets.in(user.room).emit("broadcastingUserSignOff", { nickname: user.nickname });
         socket.join("homeroom");
+        io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
         socket.emit("rejoinHomeroom", {nickname : user.nickname});
     });
 

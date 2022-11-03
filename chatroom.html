@@ -13,7 +13,11 @@
             $("#chatRoom").hide();
         }
 
+        
+        let chatRoomsDisplayed = ["homeroom"];
         let socketio = io.connect();
+
+
         socketio.on("userSignedOn",function(data) {
             // $("#userStuff").hide();
             // $("#chatRoomListContainer").hide();
@@ -38,11 +42,8 @@
             $("#chatRoomName").html("");
             $("#chatRoom").hide();
         });
- 
-        let chatRoomsDisplayed = ["homeroom"];
 
-        socketio.on("sendingChatRoomList",function(data) {
-            
+        function displayChatRooms(data){
             let chatRoomArray = data["chatRoomList"];
 
             console.log(chatRoomArray);
@@ -64,7 +65,16 @@
                 }
                 
             }
+        }
+
+
+        socketio.on("sendingChatRoomList",function(data) {
+            displayChatRooms(data);
         });
+
+        socketio.on("updateRoomList", function(data){
+            displayChatRooms(data);
+        })
 
         socketio.on("chatRoomCreated",function(data) {
             document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
