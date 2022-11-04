@@ -1,0 +1,56 @@
+//creative portion
+notify others that user joined/left
+
+
+
+//TODO:
+
+----------------
+
+JAMES:
+add a password option to private rooms
+	//separate create private room button w/ new dict in server.js
+
+creator can kick users from room
+creator can ban users (add to users banned list)
+	//store admins of room with room
+		//add third field in chatRoomList dict for each user - T/F if they're admin of the room
+		//auto set to true in createRoom, false in joinRoom, change if given adin permission
+	//in user list, add kick and ban buttons (only for admins)
+
+give admin ownership of room (kick/ban) to other users //creative
+(what if all admins leave??? - maybe auto assign to another user)
+
+------------
+
+CARO:
+display users in homeroom
+add chat functions both in homeroom and private rooms
+send private msgs to users in same room
+	//see below
+	//dont leave current room, but join the 2 sockets into their own room, only emit private msgs to that room
+	//maybe just emit.to("socket-id")
+
+delete chat room //creative
+
+----------------------------
+
+Also check validator
+
+
+
+Send private msg:
+
+<input>  //msg here
+
+<select> element
+	<option everyone> //all users in user.room
+	<option user1>
+	etc.
+
+<button submit>
+
+
+_______________  [select user]  [submit]
+
+//have to check both msg and select user are filled 
