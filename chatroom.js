@@ -50,7 +50,8 @@ io.sockets.on("connection", function (socket) {
         user["nickname"] = data["nickname"];
         chatRoomList["homeroom"].push([user.id, user.nickname]);
         socket.join("homeroom");
-        io.sockets.in("homeroom").emit("sendingChatRoomList", { chatRoomList: Object.keys(chatRoomList) })
+        let userNicknameArray = createNicknameArray();
+        io.sockets.in("homeroom").emit("sendingChatRoomList", { users: userNicknameArray, chatRoomList: Object.keys(chatRoomList) })
     });
 
     socket.on('createNewChatRoom', function (data) {
