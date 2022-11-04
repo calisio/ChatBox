@@ -20,11 +20,17 @@
         socketio.on("userJoinedRoom",function(data) {
             document.getElementById("nickname").innerHTML = "";
             document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
+            let users = data["users"];
+            console.log(users);
+            displayUsers(users);
+            // document.getElementById("usersInRoom").appendChild(document.createElement("hr"));
+            // document.getElementById("usersInRoom").innerHTML += "<div id='" + data['nickname'] + "'>" + data['nickname'] + "</div>";
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has joined the room."));
         });
 
         socketio.on("broadcastingUserLeftRoom",function(data) {
+            displayUsers(data["users"]);
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has left the room."));
         });
@@ -48,12 +54,17 @@
 
         socketio.on("chatRoomCreated",function(data) {
             document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
+            let users = data["users"];
+            console.log(users);
+            displayUsers(users);
+            //document.getElementById("usersInRoom").innerHTML += "<div id='" + data['nickname'] + "'>" + data['nickname'] + "</div>";
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has joined the room."));
         });
 
         socketio.on("broadcastingUserSignedOff",function(data) {
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            displayUsers(data["users"]);
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has signed off."));
         });
 
@@ -62,13 +73,20 @@
             $("#chatlog").html("");
             $("#chatRoomName").html("");
             $("#chatRoom").hide();
-            $("#chatRoomListContainer").hide();
             $("#userStuff").show();
         });
 
 
         // -------------------------------functions----------------------------------------------------
 
+        function displayUsers(userArray){
+            let usersInRoom = document.getElementById("usersInRoom");
+            usersInRoom.innerHTML = "Users: ";
+            for (let i=0; i < userArray.length; i++){
+                usersInRoom.innerHTML += "<br>";
+                usersInRoom.innerHTML += "<div id='" + userArray[i] + "'>" + userArray[i] + "</div>";                
+            }
+        }
 
         function displayChatRooms(data){
             let chatRoomArray = data["chatRoomList"];
@@ -158,10 +176,10 @@
                 <button onclick="leaveRoom()" id="leaveRoom">Leave Room</button>
             </div>
         </div>
-        <div class="row" id="chatRoomNameRow">
-        </div>
+        <div class="row" id="chatRoomNameRow"></div>
         <div class="row">
-            <div id="chatlog"></div>
+            <div class="col-sm" id="usersInRoom">Users:</div>
+            <div class="col-sm" id="chatlog"></div>
         </div>
     </div>
 

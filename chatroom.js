@@ -35,50 +35,88 @@ io.sockets.on("connection", function (socket) {
         // TO DO: Add 'banned from' room
     }
 
+    function createNicknameArray(){
+        let userIdArray = chatRoomList[user.room];
+        let userNicknameArray = [];
+        for (let i = 0; i < userIdArray.length; i++){
+            let [id, nickname] = userIdArray[i];
+            userNicknameArray.push(nickname);
+        }
+        return userNicknameArray;
+    }
     // This callback runs when a new Socket.IO connection is established.
 
     socket.on('userLoggedOn', function (data) {
         user["nickname"] = data["nickname"];
-        chatRoomList["homeroom"].push[user.id];
+        chatRoomList["homeroom"].push([user.id, user.nickname]);
         socket.join("homeroom");
         io.sockets.in("homeroom").emit("sendingChatRoomList", { chatRoomList: Object.keys(chatRoomList) })
     });
 
     socket.on('createNewChatRoom', function (data) {
-        chatRoomList[data["chatRoomName"]] = [user.id];
+        chatRoomList[data["chatRoomName"]] = [[user.id, user.nickname]];
         socket.join(data["chatRoomName"]);
         user.room = data["chatRoomName"];
+        let userNicknameArray = createNicknameArray();
         io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
-        io.sockets.in(user.room).emit("chatRoomCreated", { chatRoomName: user.room, nickname: user.nickname })
+        io.sockets.in(user.room).emit("chatRoomCreated", { users: userNicknameArray, chatRoomName: user.room, nickname: user.nickname })
     });
 
     socket.on('joinRoom', function (data) {
         socket.leave("homeroom");
-        chatRoomList[data["roomName"]].push(user.id);
+        chatRoomList[data["roomName"]].push([user.id, user.nickname]);
         socket.join(data["roomName"]);
         user.room = data["roomName"];
-        io.sockets.in(user.room).emit("userJoinedRoom", { nickname: user.nickname, chatRoomName: user.room }) 
+        let userNicknameArray = createNicknameArray();
+        io.sockets.in(user.room).emit("userJoinedRoom", { users: userNicknameArray, nickname: user.nickname, chatRoomName: user.room }) 
     });
 
     socket.on('signingOff', function (data) {
-        socket.leave("homeroom");
+        let userArray = chatRoomList[user.room];
+        let index = 0
+        for (let i = 0; i < userArray.length; i++){
+            if (userArray[i][0] == user.id){
+                index = i;
+            }
+        }
+        chatRoomList[user.room].splice(index, 1);
+        socket.leave(user.room);
+        let userNicknameArray = createNicknameArray();
+        io.sockets.in(user.room).emit("broadcastingUserSignedOff", { users: userNicknameArray, nickname: user.nickname });
+        //maybe only emit to homeroom ??
+        socket.emit("userDisconnecting", {});
+        console.log("disconnect: " + socket.id);
     });
 
     socket.on('leaveRoom', function (data) {
-        let index = chatRoomList[user.room].indexOf[user.id];
+        let userArray = chatRoomList[user.room];
+        let index = 0
+        for (let i = 0; i < userArray.length; i++){
+            if (userArray[i][0] == user.id){
+                index = i;
+            }
+        }
         chatRoomList[user.room].splice(index, 1);
         socket.leave(user.room);
-        io.sockets.in(user.room).emit("broadcastingUserLeftRoom", { nickname: user.nickname });
+        let userNicknameArray = createNicknameArray();
+        io.sockets.in(user.room).emit("broadcastingUserLeftRoom", { users: userNicknameArray, nickname: user.nickname });
         socket.join("homeroom");
         io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
         socket.emit("rejoinHomeroom", {nickname : user.nickname});
     });
 
     socket.on('disconnect', function(){
-        let index = chatRoomList[user.room].indexOf(user.id);
+        let userArray = chatRoomList[user.room];
+        let index = 0
+        for (let i = 0; i < userArray.length; i++){
+            if (userArray[i][0] == user.id){
+                index = i;
+            }
+        }
         chatRoomList[user.room].splice(index, 1);
         socket.leave(user.room);
-        io.sockets.in(user.room).emit("broadcastingUserSignedOff", { nickname: user.nickname });
+        let userNicknameArray = createNicknameArray();
+        io.sockets.in(user.room).emit("broadcastingUserSignedOff", { users: userNicknameArray, nickname: user.nickname });
         //maybe only emit to homeroom ??
         socket.emit("userDisconnecting", {});
         console.log("disconnect: " + socket.id);
