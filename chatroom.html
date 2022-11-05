@@ -26,6 +26,10 @@
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has joined the room."));
         });
 
+        socketio.on("userJoinedRoomADMIN", function(data){
+            displayUsersADMIN(data["users"]);
+        })
+
         socketio.on("broadcastingUserLeftRoom",function(data) {
             displayUsers(data["users"]);
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
@@ -79,10 +83,23 @@
             usersInRoom.innerHTML = "Users: ";
             for (let i=0; i < userArray.length; i++){
                 usersInRoom.innerHTML += "<br>";
-                usersInRoom.innerHTML += "<div id='" + userArray[i] + "'>" + userArray[i] + "</div>";                
+                usersInRoom.innerHTML += "<div id='" + userArray[i][0] + "'>" + userArray[i][1] + "</div>";                
             }
         }
 
+        function displayUsersADMIN(userArray){
+            let usersInRoom = document.getElementById("usersInRoom");
+            usersInRoom.innerHTML = "Users: ";
+            for (let i=0; i < userArray.length; i++){
+                usersInRoom.innerHTML += "<br>";
+                //TODO: Onclick doesn't work
+                usersInRoom.innerHTML += "<div id='" + userArray[i][0] + "'>" + userArray[i][1] + "<button type='button' id= kick" + userArray[i][0] + " onclick = kickUser(" + userArray[i][0] + ")>Kick</button></div>";                
+            }
+        }
+
+        function kickUser(id){
+            console.log(id);
+        }
         function displayChatRooms(chatRoomArray){
             let chatRoomList =  document.getElementById("chatRoomList");
 

@@ -12,11 +12,28 @@ add a password option to private rooms
 	//separate create private room button w/ new dict in server.js
 
 creator can kick users from room
-creator can ban users (add to users banned list)
+creator can ban users (add room to users banned list)
+	//store list of rooms created with user obj (creator is permantent admin)
 	//store admins of room with room
 		//add third field in chatRoomList dict for each user - T/F if they're admin of the room
 		//auto set to true in createRoom, false in joinRoom, change if given adin permission
 	//in user list, add kick and ban buttons (only for admins)
+
+
+u1 u2 u3 in r1
+
+u1 and u2 are admins
+
+add u1 and u2 to r1ADMIN also
+
+emit to r1 like normal
+	dont need sockets
+
+emit to r1ADMIN the same stuff + sockets !!, but handle differenly on catch
+ie. display kick/ban buttons
+	need sockets to put in button ids
+
+	
 
 give admin ownership of room (kick/ban) to other users //creative
 (what if all admins leave??? - maybe auto assign to another user)

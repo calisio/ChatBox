@@ -1,7 +1,10 @@
 //create a dictionary of chatrooms, each containing an array of users in each chatroom
 chatRoomList = {"homeroom": []};
 
-chatRoomAdmins = {};
+
+//dictionary of admins
+//{ [roomName : [admin1, admin2] ] }
+//chatRoomAdmins = {};
 
 // Require the packages we will use:
 const http = require("http"),
@@ -33,8 +36,9 @@ const io = socketio.listen(server);
 io.sockets.on("connection", function (socket) {
     const user = {
         id: socket.id,
-        room: "homeroom"
-        // TO DO: Add 'banned from' room
+        room: "homeroom",
+        roomsCreated: []
+        // TO DO: Add 'banned from' room list
     }
 
     function createNicknameArray(){
@@ -42,11 +46,10 @@ io.sockets.on("connection", function (socket) {
         let userNicknameArray = [];
         for (let i = 0; i < userIdArray.length; i++){
             let [id, nickname] = userIdArray[i];
-            userNicknameArray.push(nickname);
+            userNicknameArray.push([id, nickname]);
         }
         return userNicknameArray;
     }
-    // This callback runs when a new Socket.IO connection is established.
 
     socket.on('userLoggedOn', function (data) {
         user["nickname"] = data["nickname"];
@@ -58,22 +61,38 @@ io.sockets.on("connection", function (socket) {
 
     socket.on('createNewChatRoom', function (data) {
         chatRoomList[data["chatRoomName"]] = [[user.id, user.nickname]];
-        chatRoomAdmins[data["chatRoomName"]] = [user.nickname];
-        socket.join(data["chatRoomName"]);
+        socket.leave("homeroom");
+        
+        //assign values in user object
         user.room = data["chatRoomName"];
+        user.roomsCreated.push(user.room);
+
+        //join both actual room and admin room
+        socket.join(data["chatRoomName"]);
+        let adminRoomName = user.room + "ADMIN";
+        socket.join(adminRoomName);
+        
+
         let userNicknameArray = createNicknameArray();
         io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
         io.sockets.in(user.room).emit("chatRoomCreated", { users: userNicknameArray, chatRoomName: user.room, nickname: user.nickname });
-        console.log(chatRoomAdmins);
+        console.log(socket.rooms);
     });
 
     socket.on('joinRoom', function (data) {
         socket.leave("homeroom");
-        chatRoomList[data["roomName"]].push([user.id, user.nickname]);
-        socket.join(data["roomName"]);
         user.room = data["roomName"];
+
+        //when a user joins, they're not an admin by default
+        //TODO: if creator rejoins, put them in admin room too
+        chatRoomList[user.room].push([user.id, user.nickname]);
+        socket.join(user.room);
+
         let userNicknameArray = createNicknameArray();
-        io.sockets.in(user.room).emit("userJoinedRoom", { users: userNicknameArray, nickname: user.nickname, chatRoomName: user.room }) 
+
+        io.sockets.in(user.room).emit("userJoinedRoom", { users: userNicknameArray, nickname: user.nickname, chatRoomName: user.room }) ;
+        let adminRoomName = user.room + "ADMIN";
+        io.sockets.in(adminRoomName).emit("userJoinedRoomADMIN", {users: userNicknameArray});
     });
 
     socket.on('signingOff', function (data) {
@@ -85,9 +104,9 @@ io.sockets.on("connection", function (socket) {
             }
         }
 
-        if(chatRoomAdmins[user.room].includes(user.nickname)){
-            chatRoomAdmins[user.room].splice(chatRoomAdmins[user.room].indexOf(user.nickname), 1);
-        }
+        // if(chatRoomAdmins[user.room].includes(user.nickname)){
+        //     chatRoomAdmins[user.room].splice(chatRoomAdmins[user.room].indexOf(user.nickname), 1);
+        // }
 
         chatRoomList[user.room].splice(index, 1);
         socket.leave(user.room);
@@ -96,16 +115,16 @@ io.sockets.on("connection", function (socket) {
         //maybe only emit to homeroom ??
         socket.emit("userDisconnecting", {});
         console.log("disconnect: " + socket.id);
-        console.log(chatRoomAdmins);
+        //console.log(chatRoomAdmins);
 
     });
 
     socket.on('leaveRoom', function (data) {
         let userArray = chatRoomList[user.room];
 
-        if(chatRoomAdmins[user.room].includes(user.nickname)){
-            chatRoomAdmins[user.room].splice(chatRoomAdmins[user.room].indexOf(user.nickname), 1);
-        }
+        // if(chatRoomAdmins[user.room].includes(user.nickname)){
+        //     chatRoomAdmins[user.room].splice(chatRoomAdmins[user.room].indexOf(user.nickname), 1);
+        // }
 
         let index = 0;
         for (let i = 0; i < userArray.length; i++){
