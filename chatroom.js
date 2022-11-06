@@ -163,7 +163,30 @@ io.sockets.on("connection", function (socket) {
 
 
     socket.on("kickUserResponseToServer", function(data){
-        console.log("id received by server: " + data.socketid);
+        console.log(chatRoomList);
+        let socketToBeKicked = io.sockets.sockets.get(data.socketid);
+        socketToBeKicked.leave(user.room);
+        socketToBeKicked.join("homeroom");
+
+        //remove socketToBeKicked from room in chatRoomList
+        let userArray = chatRoomList[user.room];
+        let index = 0;
+        for (let i = 0; i < userArray.length; i++){
+            if (userArray[i][0] == data.socketid){
+                index = i;
+            }
+            
+        }
+
+        //socket id for kicked user
+        let kickedUser = chatRoomList[user.room][index];
+        chatRoomList[user.room].splice(index, 1);
+
+        io.sockets.in(user.room).emit("userKicked", { users: chatRoomList[user.room], kickedUser: kickedUser }) ;
+        let adminRoomName = user.room + "ADMIN";
+        io.sockets.in(adminRoomName).emit("userKickedADMIN", { users: chatRoomList[user.room], kickedUser: kickedUser });
+        io.sockets.to(kickedUser).emit("rejoinHomeroom");
+    
     });
 
 });

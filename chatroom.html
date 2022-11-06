@@ -74,6 +74,16 @@
             $("#userStuff").show();
         });
 
+        socketio.on("userKicked", function(data){
+            displayUsers(data['users']);
+            document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            document.getElementById("chatlog").appendChild(document.createTextNode(data['kickedUser'][1] + " has been kicked from the room."));
+        });
+
+        socketio.on("userKickedADMIN", function(data){
+            displayUsersADMIN(data['users']);
+        });
+
 
         // -------------------------------functions----------------------------------------------------
 
@@ -100,7 +110,8 @@
         }
 
         function kickUser(socketid){
-            socketio.emit("kickUserResponseToServer", {socketid: socketid})
+            socketio.emit("kickUserResponseToServer", {socketid: socketid});
+
         }
 
 
