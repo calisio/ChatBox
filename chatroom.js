@@ -62,7 +62,7 @@ io.sockets.on("connection", function (socket) {
     socket.on('createNewChatRoom', function (data) {
         chatRoomList[data["chatRoomName"]] = [[user.id, user.nickname]];
         socket.leave("homeroom");
-        
+
         //assign values in user object
         user.room = data["chatRoomName"];
         user.roomsCreated.push(user.room);
@@ -88,7 +88,9 @@ io.sockets.on("connection", function (socket) {
         chatRoomList[user.room].push([user.id, user.nickname]);
         socket.join(user.room);
 
-        let userNicknameArray = createNicknameArray();
+        //let userNicknameArray = createNicknameArray();
+
+        let userNicknameArray = chatRoomList[user.room];
 
         io.sockets.in(user.room).emit("userJoinedRoom", { users: userNicknameArray, nickname: user.nickname, chatRoomName: user.room }) ;
         let adminRoomName = user.room + "ADMIN";
@@ -157,6 +159,11 @@ io.sockets.on("connection", function (socket) {
         //maybe only emit to homeroom ??
         socket.emit("userDisconnecting", {});
         console.log("disconnect: " + socket.id);
+    });
+
+
+    socket.on("kickUserResponseToServer", function(data){
+        console.log("id received by server: " + data.socketid);
     });
 
 });
