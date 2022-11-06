@@ -106,10 +106,6 @@ io.sockets.on("connection", function (socket) {
             }
         }
 
-        // if(chatRoomAdmins[user.room].includes(user.nickname)){
-        //     chatRoomAdmins[user.room].splice(chatRoomAdmins[user.room].indexOf(user.nickname), 1);
-        // }
-
         chatRoomList[user.room].splice(index, 1);
         socket.leave(user.room);
         let userNicknameArray = createNicknameArray();
@@ -117,16 +113,10 @@ io.sockets.on("connection", function (socket) {
         //maybe only emit to homeroom ??
         socket.emit("userDisconnecting", {});
         console.log("disconnect: " + socket.id);
-        //console.log(chatRoomAdmins);
-
     });
 
     socket.on('leaveRoom', function (data) {
         let userArray = chatRoomList[user.room];
-
-        // if(chatRoomAdmins[user.room].includes(user.nickname)){
-        //     chatRoomAdmins[user.room].splice(chatRoomAdmins[user.room].indexOf(user.nickname), 1);
-        // }
 
         let index = 0;
         for (let i = 0; i < userArray.length; i++){
@@ -134,8 +124,8 @@ io.sockets.on("connection", function (socket) {
                 index = i;
             }
         }
-
         chatRoomList[user.room].splice(index, 1);
+        
         socket.leave(user.room);
         let userNicknameArray = createNicknameArray();
         io.sockets.in(user.room).emit("broadcastingUserLeftRoom", { users: userNicknameArray, nickname: user.nickname });

@@ -28,7 +28,7 @@
 
         socketio.on("userJoinedRoomADMIN", function(data){
             displayUsersADMIN(data["users"]);
-        })
+        });
 
         socketio.on("broadcastingUserLeftRoom",function(data) {
             displayUsers(data["users"]);
@@ -45,7 +45,7 @@
 
         socketio.on("updateRoomList", function(data){
             displayChatRooms(data["chatRoomList"]);
-        })
+        });
 
         socketio.on("sendingChatRoomList",function(data) {
             displayChatRooms(data["chatRoomList"]);
@@ -96,23 +96,39 @@
             }
         }
 
+        function kickUser(socketid){
+            console.log("CLICKCLICK");
+            socketio.emit("kickUserResponseToServer", {socketid: socketid});
+
+        }
+
         function displayUsersADMIN(userArray){
             let usersInRoom = document.getElementById("usersInRoom");
             usersInRoom.innerHTML = "Users: ";
             for (let i=0; i < userArray.length; i++){
+                //let curr_user_id = userArray[i][0];
+                console.log("=======LOOP iter=" + i);
                 usersInRoom.innerHTML += "<br>";
-                let kickButtonId = "kick" + userArray[i][0];
-                usersInRoom.innerHTML += "<div id='" + userArray[i][0] + "'>" + userArray[i][1] + "<button type='button' id= " + kickButtonId + ">Kick</button></div>";     
-                document.getElementById(kickButtonId).onclick = function(){
-                    kickUser(userArray[i][0])
+                usersInRoom.appendChild(document.createTextNode(userArray[i][1]));
+                //let userDiv = "<div id='" + curr_user_id + "'>" + userArray[i][1] + "</div>";
+                //usersInRoom.innerHTML += userDiv;
+                
+
+
+                let kickUserButton = document.createElement("button");
+                kickUserButton.innerHTML = "Kick";
+                kickUserButton.type = "submit";
+                kickUserButton.id = "kick" + userArray[i][0];
+                kickUserButton.onclick = function(){
+                    kickUser(userArray[i][0]);
                 };
+
+                usersInRoom.appendChild(kickUserButton);
+
+
             }
         }
 
-        function kickUser(socketid){
-            socketio.emit("kickUserResponseToServer", {socketid: socketid});
-
-        }
 
 
         function displayChatRooms(chatRoomArray){
@@ -135,6 +151,12 @@
                 
             }
         }
+
+        function kickUser(socketid){
+            socketio.emit("kickUserResponseToServer", {socketid: socketid});
+
+        }
+
 
         function signOn(){
             let nickname = document.getElementById("nickname").value;
