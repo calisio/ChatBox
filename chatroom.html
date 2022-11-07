@@ -131,59 +131,64 @@
             socketio.to(socketid).emit("userBanned", {socketid: socketid});
         }
 
+        let kickButtonIdArray = [];
 
         function displayUsersADMIN(userArray){
             let usersInRoom = document.getElementById("usersInRoom");
             usersInRoom.innerHTML = "Users: ";
             for (let i=0; i < userArray.length; i++){
-                //let curr_user_id = userArray[i][0];
-                //userArray[i][0] = socket id
-                //userArray[i][1] = nickname
-
-                //{[socket, nickname], [socket, nickname]}
-
-                console.log("=======LOOP iter=" + i);
-                usersInRoom.innerHTML += "<br>";
-
                 //display nickname
+                usersInRoom.innerHTML += "<br>";
                 usersInRoom.appendChild(document.createTextNode(userArray[i][1]));
 
-                //put kick button next to nickname
                 let kickUserButton = document.createElement("button");
                 kickUserButton.innerHTML = "Kick";
                 kickUserButton.type = "button";
-                //kickUserButton.id = "kick" + userArray[i][0];
                 kickUserButton.id = userArray[i][0];
-                kickUserButton.class = "kickBtn";
-                //kickUserButton.onclick = 
-                //set button id to socketid then get that in outside func
-                //use event.target.id then pass that to server
-                kickUserButton.addEventListener("click", function(){
-                    
-                    kickUser(userArray[i][0]);
-                    //passThruFunc(event);
-                    console.log(userArray[i][0]);
-                    console.log("kicking user");
-                });
+                kickUserButton.classList.add("kickBtn");
                 usersInRoom.appendChild(kickUserButton);
 
+                let makeAdminButton = document.createElement("button");
+                makeAdminButton.innerHTML = "Make Admin";
+                makeAdminButton.type = "button";
+                makeAdminButton.id = userArray[i][0];
+                makeAdminButton.classList.add("makeAdminBtn");
+                usersInRoom.appendChild(makeAdminButton);
+
+                let banUserButton = document.createElement("button");
+                banUserButton.innerHTML = "Ban";
+                banUserButton.type = "button";
+                banUserButton.id = userArray[i][0];
+                banUserButton.classList.add("banBtn");
+                usersInRoom.appendChild(banUserButton);
             }
+
+            addEventListeners();
         }
 
-        function passThruFunc(event){
-            let socketid = event.target.id;
-            if(socketid.parent.class == kickBtn){
-                kickUser(socketid);
+        function addEventListeners(){
+            let kickBtns = document.getElementsByClassName("kickBtn");
+            for(let btn of kickBtns){
+                btn.addEventListener("click", function(){
+                    kickUser(btn.id);
+                });
             }
-            else if (socketid.parent.class == makeAdminBtn){
-                makeAdmin(socketid);
-            }
-            else if (socketid.parent.class == banBtn){
-                banUser(socketid);
-            }
-        }
 
-        //end new ------------------------------------------------------------------
+            let makeAdminBtns = document.getElementsByClassName("makeAdminBtn");
+            for(let btn of makeAdminBtns){
+                btn.addEventListener("click", function(){
+                    makeAdmin(btn.id);
+                });
+            }  
+
+            let banBtns = document.getElementsByClassName("banBtn");
+            for(let btn of banBtns){
+                btn.addEventListener("click", function(){
+                    banUser(btn.id);
+                });
+            } 
+            
+        }
 
 
         function displayChatRooms(chatRoomArray){
