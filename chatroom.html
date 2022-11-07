@@ -143,10 +143,44 @@
             $("#leaveRoom").show();
             $("#chatRoomList").hide();
         });
-        
 
+        socketio.on("noPswd", function(data){
+            socketio.emit("joinRoom", {roomName: data.roomName});
+        });
+        
+        socketio.on("roomHasPswd", function(data){
+            let eButton = document.createElement("button");
+            eButton.id = "submitPswdGuessBtn";
+            eButton.innerHTML = "Submit";
+            eButton.onclick = function(){
+                submitPswdGuess(data.pswd, data.roomName);
+            };
+
+            let eInput = document.createElement("input");
+            eInput.type = "text";
+            eInput.id = "chatRoomPswdAttempt";
+            eInput.placeholder = "Password";
+            //'<button onclick="submitPswdGuess(' + data.pswd + ', ' + data.roomName + ')" id="submitPswdGuessBtn">Submit</button>';
+            //let eInput = '<input type="text" id="chatRoomPswdAtempt" placeholder="Passsword (optional)">';
+            document.getElementById("chatRoomList").prepend(eInput);
+            document.getElementById("chatRoomList").prepend(eButton);
+        });
 
         // -------------------------------functions----------------------------------------------------
+
+        function submitPswdGuess(realPswd, roomName){
+            let pswdGuess = document.getElementById("chatRoomPswdAttempt").value;
+            if(pswdGuess == realPswd){
+                socketio.emit("joinRoom", {roomName: roomName});
+            }
+            else{
+                document.getElementById("chatlog").appendChild(document.createElement("hr"));
+                document.getElementById("chatlog").appendChild(document.createTextNode("Incorrect Password"));
+                //$('#')
+            }
+        }
+
+
 
         function displayUsers(userArray){
             console.log("calling displayUsers");
@@ -250,7 +284,7 @@
                     createJoinRoomButton.type = "submit";
                     createJoinRoomButton.id = "button" + chatRoomArray[i];
                     createJoinRoomButton.onclick = function(){
-                        joinRoom(chatRoomArray[i])
+                        joinRoomAttempt(chatRoomArray[i])
                     };
                     chatRoomList.appendChild(createJoinRoomButton);
 
@@ -277,8 +311,8 @@
             $("#chatRoom").show();
         }
         
-        function joinRoom(roomName){
-            socketio.emit("joinRoom", {roomName: roomName});
+        function joinRoomAttempt(roomName){
+            socketio.emit("joinRoomAttempt", {roomName: roomName});
         }
 
         function signOff(){
@@ -291,10 +325,11 @@
 
         function createChatRoom(){
             let chatRoomName = document.getElementById("chatRoomName").value;
+            let chatRoomPswd = document.getElementById("chatRoomPswd").value;
             document.getElementById("chatlog").innerHTML = "";
             $("#createChatRoom").hide();
             $("#leaveRoom").show();
-            socketio.emit("createNewChatRoom", {chatRoomName: chatRoomName});
+            socketio.emit("createNewChatRoom", {chatRoomName: chatRoomName, chatRoomPswd: chatRoomPswd});
         }
 
         function sendMessage() {
@@ -336,6 +371,7 @@
             </div>
             <div class="col-sm" id="createChatRoom">
                 <input type="text" id="chatRoomName" placeholder="New Chat Room Name">
+                <input type="text" id="chatRoomPswd" placeholder="Passsword (optional)">
                 <button onclick="createChatRoom()" id="createChatRoomBtn">Create New Chat Room</button>
             </div>
         </div>
