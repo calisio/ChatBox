@@ -26,6 +26,11 @@
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has joined the room."));
         });
 
+        socketio.on("userLeftHomeroom", function(data) {
+            console.log(data["user"]);
+            displayUsersinHomeroom(data["user"]);
+        })
+
         socketio.on("userJoinedRoomADMIN", function(data){
             displayUsersADMIN(data["users"]);
         });
@@ -45,11 +50,12 @@
 
         socketio.on("updateRoomList", function(data){
             displayChatRooms(data["chatRoomList"]);
+            displayUsersinHomeroom(data["users"]);
         });
 
         socketio.on("sendingChatRoomList",function(data) {
             displayChatRooms(data["chatRoomList"]);
-            displayUsers(data["users"]);
+            displayUsersinHomeroom(data["users"]);
         });
 
         socketio.on("chatRoomCreated",function(data) {
@@ -87,12 +93,26 @@
 
         // -------------------------------functions----------------------------------------------------
 
+        function displayUsersinHomeroom(userArray){
+            let usersInRoom = document.getElementById("usersInHomeRoom");
+            usersInRoom.innerHTML = "Users: ";
+            for (let i=0; i < userArray.length; i++){
+                usersInRoom.innerHTML += "<br>";
+                console.log(userArray[i][1]);
+                usersInRoom.innerHTML += "<div id='" + userArray[i][0] + "'>" + userArray[i][1] + "</div>"; 
+                console.log(usersInRoom.innerHTML);               
+            }
+        }
+
         function displayUsers(userArray){
+            console.log(userArray);
             let usersInRoom = document.getElementById("usersInRoom");
             usersInRoom.innerHTML = "Users: ";
             for (let i=0; i < userArray.length; i++){
                 usersInRoom.innerHTML += "<br>";
-                usersInRoom.innerHTML += "<div id='" + userArray[i][0] + "'>" + userArray[i][1] + "</div>";                
+                console.log(userArray[i][1]);
+                usersInRoom.innerHTML += "<div id='" + userArray[i][0] + "'>" + userArray[i][1] + "</div>"; 
+                console.log(usersInRoom.innerHTML);               
             }
         }
 
@@ -215,7 +235,6 @@
             <div class="col-sm" id="chatRoomList"></div>
             <!-- list of chatrooms grabbed from the dictionary -->
         </div>
-
     </div>
     <div class="container" id="chatRoom">
         <div class="row">

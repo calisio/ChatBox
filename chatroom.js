@@ -54,8 +54,10 @@ io.sockets.on("connection", function (socket) {
     socket.on('userLoggedOn', function (data) {
         user["nickname"] = data["nickname"];
         chatRoomList["homeroom"].push([user.id, user.nickname]);
+        console.log(chatRoomList["homeroom"]);
         socket.join("homeroom");
         let userNicknameArray = createNicknameArray();
+        console.log(userNicknameArray);
         io.sockets.in("homeroom").emit("sendingChatRoomList", { users: userNicknameArray, chatRoomList: Object.keys(chatRoomList) })
     });
 
@@ -71,7 +73,17 @@ io.sockets.on("connection", function (socket) {
         socket.join(data["chatRoomName"]);
         let adminRoomName = user.room + "ADMIN";
         socket.join(adminRoomName);
-        
+
+        let homeroomUserArray = chatRoomList["homeroom"];
+        let index = 0;
+        for (let i = 0; i < homeroomUserArray.length; i++){
+            if (homeroomUserArray[i][0] == user.id){
+                index = i;
+            }
+        }
+        homeroomUserArray.splice(index, 1);
+        console.log(chatRoomList["homeroom"])
+        io.sockets.in("homeroom").emit("userLeftHomeroom", {user: homeroomUserArray});
 
         let userNicknameArray = createNicknameArray();
         io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
@@ -88,10 +100,19 @@ io.sockets.on("connection", function (socket) {
         chatRoomList[user.room].push([user.id, user.nickname]);
         socket.join(user.room);
 
-        //let userNicknameArray = createNicknameArray();
+        let homeroomUserArray = chatRoomList["homeroom"];
+        let index = 0;
+        for (let i = 0; i < homeroomUserArray.length; i++){
+            if (homeroomUserArray[i][0] == user.id){
+                index = i;
+            }
+        }
+        homeroomUserArray.splice(index, 1);
+        console.log(chatRoomList["homeroom"])
 
         let userNicknameArray = chatRoomList[user.room];
 
+        io.sockets.in("homeroom").emit("userLeftHomeroom", {user: homeroomUserArray});
         io.sockets.in(user.room).emit("userJoinedRoom", { users: userNicknameArray, nickname: user.nickname, chatRoomName: user.room }) ;
         let adminRoomName = user.room + "ADMIN";
         io.sockets.in(adminRoomName).emit("userJoinedRoomADMIN", {users: userNicknameArray});
@@ -129,8 +150,10 @@ io.sockets.on("connection", function (socket) {
         socket.leave(user.room);
         let userNicknameArray = createNicknameArray();
         io.sockets.in(user.room).emit("broadcastingUserLeftRoom", { users: userNicknameArray, nickname: user.nickname });
+        chatRoomList["homeroom"].push([user.id, user.nickname]);
         socket.join("homeroom");
-        io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
+        console.log(chatRoomList["homeroom"]);
+        io.sockets.in("homeroom").emit("updateRoomList", {users: chatRoomList["homeroom"], chatRoomList: Object.keys(chatRoomList) });
         socket.emit("rejoinHomeroom", {nickname : user.nickname});
     });
 
