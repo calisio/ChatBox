@@ -57,6 +57,7 @@ io.sockets.on("connection", function (socket) {
     }
 
     socket.on('userLoggedOn', function (data) {
+        user.room = "homeroom";
         user["nickname"] = data["nickname"];
         chatRoomList["homeroom"].push([user.id, user.nickname]);
         socket.join("homeroom");
@@ -91,6 +92,7 @@ io.sockets.on("connection", function (socket) {
 
 
     socket.on("joinRoomAttempt", function(data){
+        console.log("js: " + data.roomName);
         if(pswdDict[data.roomName] != ""){
             socket.emit("roomHasPswd", {roomName: data.roomName, pswd: pswdDict[data.roomName]});
         }
@@ -136,10 +138,11 @@ io.sockets.on("connection", function (socket) {
 
         chatRoomList[user.room].splice(index, 1);
         socket.leave(user.room);
+        let adminRoomName = user.room + "ADMIN";
+        socket.leave(adminRoomName);
         io.sockets.in(user.room).emit("broadcastingUserSignedOff", { users: chatRoomList[user.room], nickname: user.nickname });
         //maybe only emit to homeroom ??
-        socket.emit("userDisconnecting", {});
-        console.log("disconnect: " + socket.id);
+        socket.emit("userDisconnecting", {users: chatRoomList['homeroom'], chatRoomList: Object.keys(chatRoomList)});
     });
 
     socket.on('leaveRoom', function (data) {
@@ -183,9 +186,7 @@ io.sockets.on("connection", function (socket) {
         let adminRoomName = user.room + "ADMIN";
         socket.leave(adminRoomName);
         io.sockets.in(user.room).emit("broadcastingUserSignedOff", { users: chatRoomList[user.room], nickname: user.nickname });
-        //maybe only emit to homeroom ??
         socket.emit("userDisconnecting", {});
-        console.log("disconnect: " + socket.id);
     });
 
 
@@ -285,9 +286,6 @@ io.sockets.on("connection", function (socket) {
             io.to(element[0]).emit("movingDelRoomUsersHomeroom");
         });
         delete(chatRoomList[data["roomToDelete"]]);
-        console.log("this is where to look");
-        console.log(Object.keys(chatRoomList));
-        console.log(user.nickname);
         io.sockets.in("homeroom").emit("updateRoomList", {users: chatRoomList["homeroom"], chatRoomList: Object.keys(chatRoomList)});
     });
 

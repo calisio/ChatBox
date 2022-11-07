@@ -48,8 +48,10 @@
         });
 
         socketio.on("updateRoomList", function(data){
+            console.log(data["chatRoomList"]);
             displayChatRooms(data["chatRoomList"]);
             displayUsers(data["users"]);
+            $("#chatRoomList").show();
         });
 
         socketio.on("chatRoomCreated",function(data) {
@@ -68,10 +70,10 @@
         });
 
         socketio.on("userDisconnecting",function(data) {
-            $("#chatRoomListContainer").hide();
+            document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'></h2>";
+            $("#chatRoom").hide();
             $("#chatlog").html("");
             $("#chatRoomName").html("");
-            $("#chatRoom").hide();
             $("#userStuff").show();
         });
 
@@ -152,7 +154,11 @@
         socketio.on("roomHasPswd", function(data){
             let eButton = document.createElement("button");
 
+            console.log("roomhaspswd:" + data.roomName);
+
             let joinBtnId = "#button" + data.roomName;
+
+
             $(joinBtnId).hide();
 
             eButton.id = "submitPswdGuessBtn";
@@ -165,8 +171,13 @@
             eInput.type = "text";
             eInput.id = "chatRoomPswdAttempt";
             eInput.placeholder = "Password";
+
+            let lineBreak = document.createElement("hr");
+            let lineBreak2 = document.createElement("br");
             //'<button onclick="submitPswdGuess(' + data.pswd + ', ' + data.roomName + ')" id="submitPswdGuessBtn">Submit</button>';
             //let eInput = '<input type="text" id="chatRoomPswdAtempt" placeholder="Passsword (optional)">';
+            document.getElementById("chatRoomList").prepend(lineBreak2);
+            document.getElementById("chatRoomList").prepend(lineBreak);
             document.getElementById("chatRoomList").prepend(eInput);
             document.getElementById("chatRoomList").prepend(eButton);
         });
@@ -188,7 +199,6 @@
 
 
         function displayUsers(userArray){
-            console.log("calling displayUsers");
             let usersInRoom = document.getElementById("usersInRoom");
             let selectorForMessages = document.getElementById("messageDirectedTo");
             selectorForMessages.innerHTML = "<option id='messageToEveryone'>Everyone</option>"
@@ -208,19 +218,14 @@
         }
 
         function makeAdmin(socketid){
-            console.log("Make admin called on client");
-            //on server side get room from user.room
-            //DOES .to work on client side???
             socketio.emit("makeAdmin", {socketid: socketid});
         }
 
         function banUser(socketid){
-            console.log("Ban user called on client");
             socketio.emit("userBanned1", {socketid: socketid});
         }
 
         function displayUsersADMIN(userArray){
-            console.log("calling displayUsersADMIN");
             let usersInRoom = document.getElementById("usersInRoom");
             usersInRoom.innerHTML = "Users: ";
             for (let i=0; i < userArray.length; i++){
@@ -315,6 +320,8 @@
             $("#userStuff").hide();
             $("#leaveRoom").hide();
             $("#chatRoom").show();
+            $("#createChatRoom").show();
+
         }
         
         function joinRoomAttempt(roomName){
@@ -342,7 +349,6 @@
             let selectorElement = document.getElementById("messageDirectedTo");
             let selectedIndex = selectorElement.selectedIndex;
             let messageDirectedToId = selectorElement[selectedIndex].id;
-            console.log(messageDirectedToId);
             let message = document.getElementById("messageInput").value;
             if (messageDirectedToId == "messageToEveryone") {
                 socketio.emit("sendMessageToEveryone", {message: message});
