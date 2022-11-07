@@ -43,6 +43,7 @@
             $("#chatRoomList").show();
             $("#chatlog").html("");
             $("#chatRoomName").html("");
+            displayUsers(data.users);
         });
 
         socketio.on("updateRoomList", function(data){
@@ -75,7 +76,7 @@
         socketio.on("userKicked", function(data){
             displayUsers(data['users']);
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
-            document.getElementById("chatlog").appendChild(document.createTextNode(data['kickedUser'][1] + " has been kicked from the room."));
+            document.getElementById("chatlog").appendChild(document.createTextNode(data['kickedUser'] + " has been kicked from the room."));
         });
 
         socketio.on("userKickedADMIN", function(data){
@@ -98,10 +99,15 @@
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " (private): " + data['message']));
         })
         
+        socketio.on("youGotKicked", function(){
+            console.log("yGK");
+            socketio.emit("youGotKickedResponseToServer");
+        })
 
         // -------------------------------functions----------------------------------------------------
 
         function displayUsers(userArray){
+            console.log("calling displayUsers");
             let usersInRoom = document.getElementById("usersInRoom");
             let selectorForMessages = document.getElementById("messageDirectedTo");
             selectorForMessages.innerHTML = "<option id='messageToEveryone'>Everyone</option>"
@@ -116,14 +122,8 @@
             }
         }
 
-        //new---------------------------------------------------------------------
         function kickUser(socketid){
-            console.log("CLICKCLICK");
-            console.log(socketid);
-            //going to wrong socket?
-            //use .to(socketid) instead
             socketio.emit("kickUserResponseToServer", {socketid: socketid});
-            //just get id for button pressed, then worry about server
         }
 
         function makeAdmin(socketid){
@@ -138,9 +138,8 @@
             socketio.emit("userBanned", {socketid: socketid});
         }
 
-        let kickButtonIdArray = [];
-
         function displayUsersADMIN(userArray){
+            console.log("calling displayUsersADMIN");
             let usersInRoom = document.getElementById("usersInRoom");
             usersInRoom.innerHTML = "Users: ";
             for (let i=0; i < userArray.length; i++){
