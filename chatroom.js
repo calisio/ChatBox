@@ -82,6 +82,8 @@ io.sockets.on("connection", function (socket) {
         
         io.sockets.in("homeroom").emit("updateRoomList", { users: homeroomUserArray, chatRoomList: Object.keys(chatRoomList) });
         io.sockets.in(user.room).emit("chatRoomCreated", { users: chatRoomList[user.room], chatRoomName: user.room, nickname: user.nickname });
+        //dont need the next line cuz users cant kick, ban or makeAdmin themselves
+        //io.sockets.in(adminRoomName).emit("userJoinedRoomADMIN", {users: chatRoomList[user.room]});
     });
 
     socket.on('joinRoom', function (data) {
@@ -150,7 +152,7 @@ io.sockets.on("connection", function (socket) {
         console.log("-------------afterleavbe");
         console.log(chatRoomList);
 
-        socket.emit("rejoinHomeroom", {users: chatRoomList['homeroom']});
+        socket.emit("rejoinHomeroom", {users: chatRoomList['homeroom'], chatRoomList: Object.keys(chatRoomList)});
         io.sockets.in("homeroom").emit("updateRoomList", {users: chatRoomList["homeroom"], chatRoomList: Object.keys(chatRoomList) });
         
     });
@@ -176,21 +178,25 @@ io.sockets.on("connection", function (socket) {
 
     //get socketId of kicked user from client, pass back only to kicked client
     socket.on("kickUserResponseToServer", function(data){
-        console.log("kURTS");
-        io.to(data.socketid).emit("youGotKicked");
+        if(data.socketid != user.id){
+            io.to(data.socketid).emit("youGotKicked");
+        }
+        else{
+            socket.emit("cantKickYourself");
+        }
     });
 
     //we can then refer to kicked user as socket in this one
     //socket in the first callback would refer to the user kicking, not being kicked
     socket.on("youGotKickedResponseToServer", function(){
-        io.sockets.in(user.room).emit("userKicked", { users: chatRoomList[user.room], kickedUser: user.nickname }) ;
+        let oldRoom = user.room;
         socket.leave(user.room);
         let adminRoomName = user.room + "ADMIN";
         socket.leave(adminRoomName);
         socket.join("homeroom");
         chatRoomList["homeroom"].push([socket.id, user.nickname]);
         //remove socketToBeKicked from room in chatRoomList
-        let userArray = chatRoomList[user.room];
+        let userArray = chatRoomList[oldRoom];
         let index = 0;
         for (let i = 0; i < userArray.length; i++){
             if (userArray[i][0] == socket.id){
@@ -199,18 +205,25 @@ io.sockets.on("connection", function (socket) {
             
         };
         //socket id for kicked user
-        chatRoomList[user.room].splice(index, 1);
-
-        io.sockets.in(adminRoomName).emit("userKickedADMIN", { users: chatRoomList[user.room], kickedUser: user.nickname });    
-        io.to(socket.id).emit("rejoinHomeroom", {users: chatRoomList['homeroom']});
+        chatRoomList[oldRoom].splice(index, 1);
+        io.sockets.in(oldRoom).emit("userKicked", { users: chatRoomList[oldRoom], kickedUser: user.nickname }) ;
+        io.sockets.in(adminRoomName).emit("userKickedADMIN", { users: chatRoomList[oldRoom], kickedUser: user.nickname }); 
+        io.to(socket.id).emit("rejoinHomeroom", {users: chatRoomList['homeroom'], chatRoomList: Object.keys(chatRoomList)});
+        io.sockets.in("homeroom").emit("userJoinedRoom", {chatRoomName: "", users: chatRoomList["homeroom"], nickname: user.nickname})
     });
 
 
     socket.on("makeAdmin", function(data){
         let socketToBeAdmin = io.sockets.sockets.get(data.socketid);
         let adminRoomName = user.room + "ADMIN";
-        socketToBeAdmin.join(adminRoomName);
-        io.sockets.in(adminRoomName).emit("userJoinedRoomADMIN", {users: chatRoomList[user.room]});
+        if(!socketToBeAdmin.rooms.has(adminRoomName)){
+            socketToBeAdmin.join(adminRoomName);
+            io.sockets.in(adminRoomName).emit("userJoinedRoomADMIN", {users: chatRoomList[user.room]});
+        }
+        else{
+            socket.emit("alreadyAdmin");
+        }
+        
     });
 
 

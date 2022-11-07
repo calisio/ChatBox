@@ -20,8 +20,7 @@
         socketio.on("userJoinedRoom",function(data) {
             document.getElementById("nickname").innerHTML = "";
             document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
-            let users = data["users"];
-            displayUsers(users);
+            displayUsers(data["users"]);
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " has joined the room."));
         });
@@ -43,7 +42,7 @@
             $("#chatRoomList").show();
             $("#chatlog").html("");
             $("#chatRoomName").html("");
-            displayChatRooms(data["chatRoomList"]);
+            displayChatRooms(data.chatRoomList);
             displayUsers(data.users);
         });
 
@@ -101,13 +100,23 @@
         })
         
         socketio.on("youGotKicked", function(){
-            console.log("yGK");
             socketio.emit("youGotKickedResponseToServer");
         })
 
         socketio.on("movingDelRoomUsersHomeroom", function(){
             socketio.emit("moveUserToHomeroom");
         })
+
+        socketio.on("cantKickYourself", function(){
+            document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            document.getElementById("chatlog").appendChild(document.createTextNode("ALERT: You can't kick yourself!"));
+        })
+
+        socketio.on("alreadyAdmin", function(){
+            document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            document.getElementById("chatlog").appendChild(document.createTextNode("ALERT: This user is already an admin!"));
+        })
+
         
 
         // -------------------------------functions----------------------------------------------------
