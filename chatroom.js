@@ -287,7 +287,8 @@ io.sockets.on("connection", function (socket) {
         delete(chatRoomList[data["roomToDelete"]]);
         console.log("this is where to look");
         console.log(Object.keys(chatRoomList));
-        io.to(user.id).emit("updateRoomList", {users: chatRoomList["homeroom"], chatRoomList: Object.keys(chatRoomList)});
+        console.log(user.nickname);
+        io.sockets.in("homeroom").emit("updateRoomList", {users: chatRoomList["homeroom"], chatRoomList: Object.keys(chatRoomList)});
     });
 
     socket.on("moveUserToHomeroom", function(data){

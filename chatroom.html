@@ -274,9 +274,10 @@
 
         function displayChatRooms(chatRoomArray){
             let chatRoomList =  document.getElementById("chatRoomList");
+            chatRoomList.innerHTML = "";
 
-            for (let i=0; i < chatRoomArray.length; i++) {
-                if(!chatRoomsDisplayed.includes(chatRoomArray[i])){
+            for (let i=1; i < chatRoomArray.length; i++) {
+                //if(!chatRoomsDisplayed.includes(chatRoomArray[i])){
                     chatRoomsDisplayed.push(chatRoomArray[i]);
                     chatRoomList.appendChild(document.createTextNode(chatRoomArray[i]));
                     let createJoinRoomButton = document.createElement("button");
@@ -297,7 +298,7 @@
                     }
                     chatRoomList.appendChild(createDeleteRoomButton);
                     document.getElementById("chatRoomList").appendChild(document.createElement("hr"));
-                }
+                //}
                 
             }
         }
