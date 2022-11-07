@@ -239,6 +239,26 @@ io.sockets.on("connection", function (socket) {
 
     });
 
+    socket.on("deleteRoom", function(data){
+        let usersInRoomToDelete = chatRoomList[data["roomToDelete"]];
+        usersInRoomToDelete.forEach(element => {
+            io.to(element[0]).emit("movingDelRoomUsersHomeroom");
+        });
+        delete(chatRoomList[data["roomToDelete"]]);
+        console.log("this is where to look");
+        console.log(Object.keys(chatRoomList));
+        io.to(user.id).emit("updateRoomList", {users: chatRoomList["homeroom"], chatRoomList: Object.keys(chatRoomList)});
+    });
+
+    socket.on("moveUserToHomeroom", function(data){
+        socket.leave(user.room);
+        socket.join("homeroom");
+        chatRoomList["homeroom"].push([user.id, user.nickname]);
+        user.room = "homeroom";
+        io.to(user.id).emit("rejoinHomeroom", {users: chatRoomList['homeroom'], chatRoomList: Object.keys(chatRoomList)});
+        io.sockets.in("homeroom").emit("updateRoomList", {users: chatRoomList["homeroom"], chatRoomList: Object.keys(chatRoomList) });
+    });
+
     //----------------------------------sending messages-----------------------------------------------
 
     socket.on("sendMessageToEveryone", function(data){
@@ -249,7 +269,5 @@ io.sockets.on("connection", function (socket) {
         io.to(data["pmRecipient"]).emit("displayPM", {nickname: user.nickname, message: data["message"]});
         io.to(user.id).emit("displayPM", {nickname: user.nickname, message: data["message"]});
     });
-
-
 
 });

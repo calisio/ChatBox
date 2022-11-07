@@ -43,6 +43,7 @@
             $("#chatRoomList").show();
             $("#chatlog").html("");
             $("#chatRoomName").html("");
+            displayChatRooms(data["chatRoomList"]);
             displayUsers(data.users);
         });
 
@@ -103,6 +104,11 @@
             console.log("yGK");
             socketio.emit("youGotKickedResponseToServer");
         })
+
+        socketio.on("movingDelRoomUsersHomeroom", function(){
+            socketio.emit("moveUserToHomeroom");
+        })
+        
 
         // -------------------------------functions----------------------------------------------------
 
@@ -211,6 +217,15 @@
                         joinRoom(chatRoomArray[i])
                     };
                     chatRoomList.appendChild(createJoinRoomButton);
+
+                    let createDeleteRoomButton = document.createElement("button");
+                    createDeleteRoomButton.innerHTML = "Delete Room";
+                    createDeleteRoomButton.type = "sumbit";
+                    createDeleteRoomButton.id = chatRoomArray[i];
+                    createDeleteRoomButton.onclick = function() {
+                        socketio.emit("deleteRoom",{roomToDelete: chatRoomArray[i], nickname : nickname});
+                    }
+                    chatRoomList.appendChild(createDeleteRoomButton);
                     document.getElementById("chatRoomList").appendChild(document.createElement("hr"));
                 }
                 
