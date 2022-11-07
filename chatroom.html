@@ -90,6 +90,12 @@
             displayUsersADMIN(data['users']);
         });
 
+        socketio.on("userBannedResponse", function(data){
+            displayUsers(data['users']);
+            document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            document.getElementById("chatlog").appendChild(document.createTextNode(data['bannedUser'] + " has been banned from the room."));
+        });
+
 
         // -------------------------------functions----------------------------------------------------
 
@@ -116,6 +122,7 @@
             }
         }
 
+        //new---------------------------------------------------------------------
         function kickUser(socketid){
             console.log("CLICKCLICK");
             console.log(socketid);
@@ -124,6 +131,19 @@
             socketio.emit("kickUserResponseToServer", {socketid: socketid});
             //just get id for button pressed, then worry about server
         }
+
+        function makeAdmin(socketid){
+            console.log("Make admin called on client");
+            //on server side get room from user.room
+            //DOES .to work on client side???
+            socketio.to(socketid).emit("makeAdmin");
+        }
+
+        function banUser(socketid){
+            console.log("Ban user called on client");
+            socketio.to(socketid).emit("userBanned", {socketid: socketid});
+        }
+
 
         function displayUsersADMIN(userArray){
             let usersInRoom = document.getElementById("usersInRoom");
@@ -145,12 +165,16 @@
                 let kickUserButton = document.createElement("button");
                 kickUserButton.innerHTML = "Kick";
                 kickUserButton.type = "button";
-                kickUserButton.id = "kick" + userArray[i][0];
+                //kickUserButton.id = "kick" + userArray[i][0];
+                kickUserButton.id = userArray[i][0];
+                kickUserButton.class = "kickBtn";
                 //kickUserButton.onclick = 
                 //set button id to socketid then get that in outside func
                 //use event.target.id then pass that to server
                 kickUserButton.addEventListener("click", function(){
+                    
                     kickUser(userArray[i][0]);
+                    //passThruFunc(event);
                     console.log(userArray[i][0]);
                     console.log("kicking user");
                 });
@@ -159,6 +183,20 @@
             }
         }
 
+        function passThruFunc(event){
+            let socketid = event.target.id;
+            if(socketid.parent.class == kickBtn){
+                kickUser(socketid);
+            }
+            else if (socketid.parent.class == makeAdminBtn){
+                makeAdmin(socketid);
+            }
+            else if (socketid.parent.class == banBtn){
+                banUser(socketid);
+            }
+        }
+
+        //end new ------------------------------------------------------------------
 
 
         function displayChatRooms(chatRoomArray){

@@ -37,7 +37,8 @@ io.sockets.on("connection", function (socket) {
     const user = {
         id: socket.id,
         room: "homeroom",
-        roomsCreated: []
+        roomsCreated: [],
+        roomsBannedFrom: []
         // TO DO: Add 'banned from' room list
     }
 
@@ -82,13 +83,13 @@ io.sockets.on("connection", function (socket) {
             }
         }
         homeroomUserArray.splice(index, 1);
-        console.log(chatRoomList["homeroom"])
+        //console.log(chatRoomList["homeroom"])
         io.sockets.in("homeroom").emit("userLeftHomeroom", {user: homeroomUserArray});
 
         let userNicknameArray = createNicknameArray();
         io.sockets.in("homeroom").emit("updateRoomList", { chatRoomList: Object.keys(chatRoomList) });
         io.sockets.in(user.room).emit("chatRoomCreated", { users: userNicknameArray, chatRoomName: user.room, nickname: user.nickname });
-        console.log(socket.rooms);
+        //console.log(socket.rooms);
     });
 
     socket.on('joinRoom', function (data) {
@@ -176,7 +177,7 @@ io.sockets.on("connection", function (socket) {
 
 
     socket.on("kickUserResponseToServer", function(data){
-        console.log(chatRoomList);
+        //console.log(chatRoomList);
         let socketToBeKicked = io.sockets.sockets.get(data.socketid);
         socketToBeKicked.leave(user.room);
         socketToBeKicked.join("homeroom");
@@ -189,8 +190,7 @@ io.sockets.on("connection", function (socket) {
                 index = i;
             }
             
-        }
-
+        };
         //socket id for kicked user
         let kickedUser = chatRoomList[user.room][index];
         chatRoomList[user.room].splice(index, 1);
@@ -201,5 +201,40 @@ io.sockets.on("connection", function (socket) {
         io.sockets.to(kickedUser).emit("rejoinHomeroom");
     
     });
+
+
+    //new----------------------------------------
+    socket.on("makeAdmin", function(){
+        let adminRoomName = user.room + "ADMIN";
+        socket.join(adminRoomName);
+        socket.emit("userJoinedRoomADMIN", {users: chatRoomList[user.room]});
+    });
+
+
+    socket.on("userBanned", function(data){
+        //add user.room to user.bannedList
+        user.roomsBannedFrom.push(user.room);
+
+        //remove socketToBeBanned from room in chatRoomList
+        let userArray = chatRoomList[user.room];
+        let index = 0;
+        for (let i = 0; i < userArray.length; i++){
+            if (userArray[i][0] == data.socketid){
+                index = i;
+            }
+            
+        };
+        chatRoomList[user.room].splice(index, 1);
+
+        io.sockets.in(user.room).emit("userBannedResponse", {users: chatRoomList[user.room], bannedUser: user.nickname});
+
+        socket.leave(user.room);
+        socket.join("homeroom");
+        //TODO: check if user.room is automatically updated
+
+        //TODO: somewhere else, check if room is in banned list before join
+
+    });
+
 
 });
