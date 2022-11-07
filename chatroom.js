@@ -224,9 +224,15 @@ io.sockets.on("connection", function (socket) {
 
     //----------------------------------sending messages-----------------------------------------------
 
-    socket.on("sendMessage", function(data){
-        io.sockets.in(user.room).emit("displayMessage", {nickname: user.nickname, message: data["message"]});
+    socket.on("sendMessageToEveryone", function(data){
+        io.sockets.in(user.room).emit("displayMessageToEveryone", {nickname: user.nickname, message: data["message"]});
     });
+
+    socket.on("sendPrivateMessage", function(data){
+        io.to(data["pmRecipient"]).emit("displayPM", {nickname: user.nickname, message: data["message"]});
+        io.to(user.id).emit("displayPM", {nickname: user.nickname, message: data["message"]});
+    });
+
 
 
 });

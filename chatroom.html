@@ -88,20 +88,31 @@
             document.getElementById("chatlog").appendChild(document.createTextNode(data['bannedUser'] + " has been banned from the room."));
         });
 
-        socketio.on("displayMessage", function(data) {
+        socketio.on("displayMessageToEveryone", function(data) {
             document.getElementById("chatlog").appendChild(document.createElement("hr"));
             document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + ": " + data['message']));
         })
 
+        socketio.on("displayPM", function(data) {
+            document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            document.getElementById("chatlog").appendChild(document.createTextNode(data['nickname'] + " (private): " + data['message']));
+        })
+        
 
         // -------------------------------functions----------------------------------------------------
 
         function displayUsers(userArray){
             let usersInRoom = document.getElementById("usersInRoom");
+            let selectorForMessages = document.getElementById("messageDirectedTo");
+            selectorForMessages.innerHTML = "<option id='messageToEveryone'>Everyone</option>"
             usersInRoom.innerHTML = "Users: ";
             for (let i=0; i < userArray.length; i++){
                 usersInRoom.innerHTML += "<br>";
-                usersInRoom.innerHTML += "<div id='" + userArray[i][0] + "'>" + userArray[i][1] + "</div>";              
+                usersInRoom.innerHTML += "<div id='" + userArray[i][0] + "'>" + userArray[i][1] + "</div>";
+                let newOption = document.createElement("option");
+                newOption.id = userArray[i][0];
+                newOption.innerHTML = userArray[i][1];
+                selectorForMessages.appendChild(newOption);             
             }
         }
 
@@ -242,8 +253,17 @@
         }
 
         function sendMessage() {
+            let selectorElement = document.getElementById("messageDirectedTo");
+            let selectedIndex = selectorElement.selectedIndex;
+            let messageDirectedToId = selectorElement[selectedIndex].id;
+            console.log(messageDirectedToId);
             let message = document.getElementById("messageInput").value;
-            socketio.emit("sendMessage", {message: message});
+            if (messageDirectedToId == "messageToEveryone") {
+                socketio.emit("sendMessageToEveryone", {message: message});
+            }
+            else {
+                socketio.emit("sendPrivateMessage", {pmRecipient: messageDirectedToId, message: message});
+            }
             document.getElementById("messageInput").value = "";
         }
 
@@ -261,23 +281,6 @@
             </div>
         </div>
     </div>
-    <!-- <div class="container" id="chatRoomListContainer">
-        <div class="row">
-            <div class="col-sm">
-                <button onclick="signOff()" id="signOff">Sign Off</button>
-            </div>
-            <div class="col-sm">
-                <input type="text" id="chatRoomName" placeholder="New Chat Room Name">
-                <button onclick="createChatRoom()" id="createChatRoomBtn">Create New Chat Room</button>
-            </div>
-        </div>
-        <h3 class="row" id="homeroomNameRow">Homeroom</h3>
-        <div class="row">
-            <div class="col-sm" id="usersInHomeRoom">Users: </div>
-            <div class="col-sm" id="chatRoomList"></div>
-            <div class="col-sm" id="chatlog"></div>
-        </div>
-    </div> -->
     <div class="container" id="chatRoom">
         <div class="row">
             <div class="col-sm">
@@ -297,6 +300,9 @@
             <div class="col-sm" id="chatRoomList"></div>
             <div class="col-sm">
                 <div id="chatlog"></div>
+                <select id="messageDirectedTo">
+                    <option id="messageToEveryone">Everyone</option>
+                </select>
                 <input type="text" id="messageInput" placeholder="message">
                 <button onclick="sendMessage()" id="sendMessageBtn">send</button>
             </div>
