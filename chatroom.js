@@ -136,6 +136,8 @@ io.sockets.on("connection", function (socket) {
 
         chatRoomList[user.room].splice(index, 1);
         socket.leave(user.room);
+        socket.join("homeroom");
+        user.room = "homeroom";
         io.sockets.in(user.room).emit("broadcastingUserSignedOff", { users: chatRoomList[user.room], nickname: user.nickname });
         //maybe only emit to homeroom ??
         socket.emit("userDisconnecting", {});
