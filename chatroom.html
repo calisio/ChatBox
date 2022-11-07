@@ -118,8 +118,11 @@
 
         function kickUser(socketid){
             console.log("CLICKCLICK");
+            console.log(socketid);
+            //going to wrong socket?
+            //use .to(socketid) instead
             socketio.emit("kickUserResponseToServer", {socketid: socketid});
-
+            //just get id for button pressed, then worry about server
         }
 
         function displayUsersADMIN(userArray){
@@ -127,24 +130,31 @@
             usersInRoom.innerHTML = "Users: ";
             for (let i=0; i < userArray.length; i++){
                 //let curr_user_id = userArray[i][0];
+                //userArray[i][0] = socket id
+                //userArray[i][1] = nickname
+
+                //{[socket, nickname], [socket, nickname]}
+
                 console.log("=======LOOP iter=" + i);
                 usersInRoom.innerHTML += "<br>";
+
+                //display nickname
                 usersInRoom.appendChild(document.createTextNode(userArray[i][1]));
-                //let userDiv = "<div id='" + curr_user_id + "'>" + userArray[i][1] + "</div>";
-                //usersInRoom.innerHTML += userDiv;
-                
 
-
+                //put kick button next to nickname
                 let kickUserButton = document.createElement("button");
                 kickUserButton.innerHTML = "Kick";
-                kickUserButton.type = "submit";
+                kickUserButton.type = "button";
                 kickUserButton.id = "kick" + userArray[i][0];
-                kickUserButton.onclick = function(){
+                //kickUserButton.onclick = 
+                //set button id to socketid then get that in outside func
+                //use event.target.id then pass that to server
+                kickUserButton.addEventListener("click", function(){
                     kickUser(userArray[i][0]);
-                };
-
+                    console.log(userArray[i][0]);
+                    console.log("kicking user");
+                });
                 usersInRoom.appendChild(kickUserButton);
-
 
             }
         }
