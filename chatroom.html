@@ -52,6 +52,7 @@
         });
 
         socketio.on("chatRoomCreated",function(data) {
+            $("#chatRoomList").hide();
             document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'>" + data['chatRoomName'] + "</h2>";
             let users = data["users"];
             displayUsers(users);
