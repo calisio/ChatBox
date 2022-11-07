@@ -117,7 +117,33 @@
             document.getElementById("chatlog").appendChild(document.createTextNode("ALERT: This user is already an admin!"));
         })
 
+        socketio.on("youGotBanned", function(){
+            socketio.emit("userBanned2");
+        })
+
+        socketio.on("cantBanYourself", function(){
+            document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            document.getElementById("chatlog").appendChild(document.createTextNode("ALERT: You can't ban yourself!"));
+        })
+
+        socketio.on("youreBannedFromThisRoom", function(){
+            document.getElementById("chatlog").appendChild(document.createElement("hr"));
+            document.getElementById("chatlog").appendChild(document.createTextNode("ALERT: You're banned from this room!"));
+        })
         
+        socketio.on("userBannedADMIN", function(data){
+            displayUsersADMIN(data['users']);
+        });
+
+        socketio.on("joinRoomSuccess", function(){
+            document.getElementById("chatlog").innerHTML = "";
+            $("#userStuff").hide();
+            $("#createChatRoom").hide();
+            $("#leaveRoom").show();
+            $("#chatRoomList").hide();
+        });
+        
+
 
         // -------------------------------functions----------------------------------------------------
 
@@ -150,7 +176,7 @@
 
         function banUser(socketid){
             console.log("Ban user called on client");
-            socketio.emit("userBanned", {socketid: socketid});
+            socketio.emit("userBanned1", {socketid: socketid});
         }
 
         function displayUsersADMIN(userArray){
@@ -252,11 +278,6 @@
         
         function joinRoom(roomName){
             socketio.emit("joinRoom", {roomName: roomName});
-            document.getElementById("chatlog").innerHTML = "";
-            $("#userStuff").hide();
-            $("#createChatRoom").hide();
-            $("#leaveRoom").show();
-            $("#chatRoomList").hide();
         }
 
         function signOff(){

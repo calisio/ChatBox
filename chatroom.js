@@ -87,23 +87,29 @@ io.sockets.on("connection", function (socket) {
     });
 
     socket.on('joinRoom', function (data) {
-        socket.leave("homeroom");
-        user.room = data["roomName"];
-        chatRoomList[user.room].push([user.id, user.nickname]);
-        socket.join(user.room);
+        if(!user.roomsBannedFrom.includes(data.roomName)){
+            socket.leave("homeroom");
+            user.room = data["roomName"];
+            chatRoomList[user.room].push([user.id, user.nickname]);
+            socket.join(user.room);
 
-        let adminRoomName = user.room + "ADMIN";
+            let adminRoomName = user.room + "ADMIN";
 
-        if(user.roomsCreated.includes(user.room)){
-            socket.join(adminRoomName);
+            if(user.roomsCreated.includes(user.room)){
+                socket.join(adminRoomName);
+            }
+
+            let homeroomUserArray = updateHomeroomUserArray();
+
+            io.sockets.in("homeroom").emit("broadcastingUserLeftRoom", {users: homeroomUserArray, nickname: user.nickname});
+            io.sockets.in(user.room).emit("userJoinedRoom", { users: chatRoomList[user.room], nickname: user.nickname, chatRoomName: user.room }) ;
+            socket.emit("joinRoomSuccess");
+            io.sockets.in(adminRoomName).emit("userJoinedRoomADMIN", {users: chatRoomList[user.room]});
         }
-
-        let homeroomUserArray = updateHomeroomUserArray();
-
-        io.sockets.in("homeroom").emit("broadcastingUserLeftRoom", {users: homeroomUserArray, nickname: user.nickname});
-        io.sockets.in(user.room).emit("userJoinedRoom", { users: chatRoomList[user.room], nickname: user.nickname, chatRoomName: user.room }) ;
+        else{
+            socket.emit("youreBannedFromThisRoom");
+        }
         
-        io.sockets.in(adminRoomName).emit("userJoinedRoomADMIN", {users: chatRoomList[user.room]});
     });
 
     socket.on('signingOff', function (data) {
@@ -226,29 +232,41 @@ io.sockets.on("connection", function (socket) {
         
     });
 
+    socket.on("userBanned1", function(data){
+        if(data.socketid != user.id){
+            io.to(data.socketid).emit("youGotBanned");
+        }
+        else{
+            socket.emit("cantBanYourself");
+        }
+    });
 
-    socket.on("userBanned", function(data){
+    socket.on("userBanned2", function(data){
         //add user.room to user.bannedList
         user.roomsBannedFrom.push(user.room);
 
-        //remove socketToBeBanned from room in chatRoomList
-        let userArray = chatRoomList[user.room];
+        let oldRoom = user.room;
+        //remove user from room in chatRoomList
+        socket.leave(user.room);
+        let adminRoomName = user.room + "ADMIN";
+        socket.leave(adminRoomName);
+        socket.join("homeroom");
+        chatRoomList["homeroom"].push([socket.id, user.nickname]);
+        //remove socket from room in chatRoomList
+        let userArray = chatRoomList[oldRoom];
         let index = 0;
         for (let i = 0; i < userArray.length; i++){
-            if (userArray[i][0] == data.socketid){
+            if (userArray[i][0] == socket.id){
                 index = i;
             }
             
         };
-        chatRoomList[user.room].splice(index, 1);
+        chatRoomList[oldRoom].splice(index, 1);
 
-        io.sockets.in(user.room).emit("userBannedResponse", {users: chatRoomList[user.room], bannedUser: user.nickname});
-
-        socket.leave(user.room);
-        socket.join("homeroom");
-        //TODO: check if user.room is automatically updated
-
-        //TODO: somewhere else, check if room is in banned list before join
+        io.sockets.in(user.room).emit("userBannedResponse", {users: chatRoomList[oldRoom], bannedUser: user.nickname});
+        io.sockets.in(adminRoomName).emit("userBannedADMIN", { users: chatRoomList[oldRoom], kickedUser: user.nickname }); 
+        io.to(socket.id).emit("rejoinHomeroom", {users: chatRoomList['homeroom'], chatRoomList: Object.keys(chatRoomList)});
+        io.sockets.in("homeroom").emit("userJoinedRoom", {chatRoomName: "", users: chatRoomList["homeroom"], nickname: user.nickname})
 
     });
 
