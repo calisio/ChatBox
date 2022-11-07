@@ -37,19 +37,15 @@
         });
 
         socketio.on("rejoinHomeroom",function(data) {
+            document.getElementById("chatRoomNameRow").innerHTML = "<h2 id='chatRoomNameHeader'></h2>";
             $("#leaveRoom").hide();
             $("#createChatRoom").show();
+            $("#chatRoomList").show();
             $("#chatlog").html("");
             $("#chatRoomName").html("");
         });
 
         socketio.on("updateRoomList", function(data){
-            displayChatRooms(data["chatRoomList"]);
-            displayUsers(data["users"]);
-        });
-
-        socketio.on("sendingChatRoomList",function(data) {
-            //correctly getting chatroomlist and users array
             displayChatRooms(data["chatRoomList"]);
             displayUsers(data["users"]);
         });
@@ -123,12 +119,12 @@
             console.log("Make admin called on client");
             //on server side get room from user.room
             //DOES .to work on client side???
-            socketio.to(socketid).emit("makeAdmin");
+            socketio.emit("makeAdmin", {socketid: socketid});
         }
 
         function banUser(socketid){
             console.log("Ban user called on client");
-            socketio.to(socketid).emit("userBanned", {socketid: socketid});
+            socketio.emit("userBanned", {socketid: socketid});
         }
 
         let kickButtonIdArray = [];
@@ -137,7 +133,6 @@
             let usersInRoom = document.getElementById("usersInRoom");
             usersInRoom.innerHTML = "Users: ";
             for (let i=0; i < userArray.length; i++){
-                //display nickname
                 usersInRoom.innerHTML += "<br>";
                 usersInRoom.appendChild(document.createTextNode(userArray[i][1]));
 
@@ -210,11 +205,6 @@
                 }
                 
             }
-        }
-
-        function kickUser(socketid){
-            socketio.emit("kickUserResponseToServer", {socketid: socketid});
-
         }
 
 
