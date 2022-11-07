@@ -1,0 +1,18 @@
+.div{
+    margin: 2px;
+    padding: 2%;
+}
+
+#userStuff{
+    background-color: aliceblue;
+}
+
+
+#chatRoom{
+    background-color: gray;
+}
+
+#chatRoomNameRow{
+    background-color: bisque;
+}
+
