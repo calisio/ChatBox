@@ -41,7 +41,7 @@ give admin ownership of room (kick/ban) to other users //creative
 ------------
 
 CARO:
-display users in homeroom
+display users in homeroom - should be done (review)
 add chat functions both in homeroom and private rooms
 send private msgs to users in same room
 	//see below
